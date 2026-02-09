@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #6D28D9;
+  --color-primary-light: #8B5CF6;
+  --color-primary-dark: #5B21B6;
+  --color-secondary: #FB7185;
+  --color-secondary-light: #FDA4AF;
+  --color-background: #FFFBF5;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F3F4F6;
+  --color-text-main: #1F2937;
+  --color-text-muted: #6B7280;
+  --color-text-inverse: #FFFFFF;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+}
+
+:root {
+  /* Keep CSS variables for React inline styles if needed, 
+     but Tailwind v4 @theme handles the utility classes */
+  --primary: #6D28D9;
+  --primary-light: #8B5CF6;
+  --primary-dark: #5B21B6;
+  --secondary: #FB7185;
+  --secondary-light: #FDA4AF;
+  --background: #FFFBF5;
+  --surface: #FFFFFF;
+  --surface-muted: #F3F4F6;
+  --text-main: #1F2937;
+  --text-muted: #6B7280;
+  --text-inverse: #FFFFFF;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--background);
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+body.font-loaded {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Custom Component Classes (Legacy support) */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  position: relative;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  /* Fallback if not using utility */
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
