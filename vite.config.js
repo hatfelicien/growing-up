@@ -16,6 +16,10 @@ export default defineConfig({
         short_name: 'Growing Up',
         description: 'An educational app for adolescent girls.',
         theme_color: '#ffffff',
+        background_color: '#ffffff',
+        display: 'standalone',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
             src: 'icon.svg',
