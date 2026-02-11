@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640">
+  <rect width="360" height="640" fill="#f3e8ff"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="24" fill="#6b21a8">Growing Up App</text>
+  <rect x="20" y="20" width="320" height="60" rx="8" fill="white"/>
+  <rect x="20" y="100" width="150" height="150" rx="16" fill="white"/>
+  <rect x="190" y="100" width="150" height="150" rx="16" fill="white"/>
+</svg>

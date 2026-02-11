@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800">
+  <rect width="1280" height="800" fill="#f3e8ff"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="48" fill="#6b21a8">Growing Up Dashboard</text>
+  <rect x="50" y="50" width="250" height="700" fill="white"/>
+  <rect x="350" y="50" width="880" height="200" rx="16" fill="white"/>
+  <rect x="350" y="300" width="880" height="450" rx="16" fill="white"/>
+</svg>

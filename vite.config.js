@@ -20,12 +20,30 @@ export default defineConfig({
         display: 'standalone',
         start_url: '/',
         scope: '/',
+        id: '/',
+        orientation: 'portrait',
         icons: [
           {
             src: 'icon.svg',
             sizes: '192x192 512x512',
             type: 'image/svg+xml',
             purpose: 'any maskable'
+          }
+        ],
+        screenshots: [
+          {
+            src: 'screenshot-mobile.svg',
+            sizes: '360x640',
+            type: 'image/svg+xml',
+            form_factor: 'narrow',
+            label: 'Mobile Home Screen'
+          },
+          {
+            src: 'screenshot-desktop.svg',
+            sizes: '1280x800',
+            type: 'image/svg+xml',
+            form_factor: 'wide',
+            label: 'Desktop Dashboard'
           }
         ]
       }
