@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { content } from '../data/content';
+import { api } from '../services/api';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function QuizView() {
     const { moduleId } = useParams();
-    const module = content.modules.find(m => m.id === moduleId);
+    const [module, setModule] = useState(null);
 
     // State to hold shuffled content
     const [quizData, setQuizData] = useState(null);
@@ -19,7 +19,16 @@ export default function QuizView() {
     const [isAnswered, setIsAnswered] = useState(false);
 
     // Initialize quiz with shuffling
-    React.useEffect(() => {
+    useEffect(() => {
+        const loadModule = async () => {
+            const modules = await api.getModules();
+            const found = modules.find(m => m.id === moduleId);
+            setModule(found);
+        };
+        loadModule();
+    }, [moduleId]);
+
+    useEffect(() => {
         if (module?.quiz) {
             // 1. Shuffle Questions
             const shuffledQuestions = [...module.quiz.questions]

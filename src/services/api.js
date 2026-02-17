@@ -2,6 +2,7 @@
 const DB_NAME = 'GrowingUpDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'modules';
+import { content } from '../data/content.js';
 
 // Initialize IndexedDB
 const openDB = () => {
@@ -21,33 +22,38 @@ const openDB = () => {
 };
 
 export const api = {
+    // ... (existing code)
+
     // Sync data from server to local storage
     syncContent: async () => {
+        let modulesData = [];
         try {
             // 1. Try to fetch from server
             const response = await fetch('/api/data');
             if (!response.ok) throw new Error('Network response was not ok');
 
             const data = await response.json();
+            modulesData = data.modules;
 
-            // 2. Save to IndexedDB
-            const db = await openDB();
-            const tx = db.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-
-            // Clear old data? Or merge? For now, clear and replace to ensure consistency.
-            await store.clear();
-
-            for (const module of data.modules) {
-                store.put(module);
-            }
-
-            return data.modules;
         } catch (error) {
-            console.log('Offline or Server Unreachable. Using cached data.', error);
-            // Fallback to cache handled in getModules
-            return await api.getModules();
+            console.log('Offline or Server Unreachable. Using static fallback data.', error);
+            // Fallback to static content
+            modulesData = content.modules;
         }
+
+        // 2. Save to IndexedDB (Always save whatever we got - server or static)
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+
+        // Clear old data? Or merge? For now, clear and replace to ensure consistency.
+        await store.clear();
+
+        for (const module of modulesData) {
+            store.put(module);
+        }
+
+        return modulesData;
     },
 
     // Get modules (Offline-first strategy)

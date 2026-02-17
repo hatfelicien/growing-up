@@ -98,7 +98,6 @@ app.post('/api/modules', async (req, res) => {
     if (!module.lessons) module.lessons = [];
 
     await db.modules.insert(module);
-    await db.modules.insert(module);
     res.json({ success: true, module });
 });
 
