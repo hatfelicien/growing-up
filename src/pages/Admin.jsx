@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { LayoutDashboard, BookOpen, Layers, Plus, Trash2, LogOut } from 'lucide-react';
@@ -10,22 +9,18 @@ export default function Admin() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stats, setStats] = useState(null);
     const [modules, setModules] = useState([]);
-
-    // Forms
     const [newLesson, setNewLesson] = useState({ title: '', videoId: '', content: '' });
     const [selectedModuleId, setSelectedModuleId] = useState('');
     const [newModule, setNewModule] = useState({ title: '', description: '', icon: 'Sparkles', color: 'bg-purple-100' });
 
     useEffect(() => {
-        if (isLoggedIn) {
-            refreshData();
-        }
+        if (isLoggedIn) refreshData();
     }, [isLoggedIn]);
 
     const refreshData = async () => {
         const s = await api.getStats();
         setStats(s);
-        const m = await api.syncContent(); // Ensure we have latest
+        const m = await api.syncContent();
         setModules(m);
         if (m.length > 0 && !selectedModuleId) setSelectedModuleId(m[0].id);
     };
@@ -43,7 +38,6 @@ export default function Admin() {
     const handleAddLesson = async (e) => {
         e.preventDefault();
         if (!selectedModuleId) return alert('Select a module');
-
         const lesson = {
             id: Date.now().toString(),
             title: newLesson.title,
@@ -52,7 +46,6 @@ export default function Admin() {
             videoId: newLesson.videoId,
             content: newLesson.content
         };
-
         const result = await api.addLesson(selectedModuleId, lesson);
         if (result.success) {
             alert('Lesson Added!');
@@ -64,7 +57,7 @@ export default function Admin() {
     };
 
     const handleDeleteLesson = async (moduleId, lessonId) => {
-        if (!confirm('Are you sure you want to delete this lesson?')) return;
+        if (!confirm('Delete this lesson?')) return;
         await api.deleteLesson(moduleId, lessonId);
         refreshData();
     };
@@ -90,192 +83,178 @@ export default function Admin() {
 
     if (!isLoggedIn) {
         return (
-            <div className="container" style={{ paddingTop: '4rem', maxWidth: '400px' }}>
-                <h2 className="text-center mb-4">Admin Login</h2>
-                <form onSubmit={handleLogin} className="card">
-                    <div className="mb-2">
-                        <label>Username</label>
-                        <input type="text" className="w-full p-2 border rounded" value={username} onChange={e => setUsername(e.target.value)} />
+            <div style={{ minHeight: '100vh', background: 'var(--background)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ maxWidth: '400px', width: '100%', padding: '2rem' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <div style={{ background: 'var(--primary)', width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'white', fontSize: '2rem' }}>🔐</div>
+                        <h2 style={{ color: 'var(--primary-dark)', fontSize: '1.75rem', marginBottom: '0.5rem' }}>Admin Portal</h2>
+                        <p style={{ color: 'var(--text-muted)' }}>Sign in to manage content</p>
                     </div>
-                    <div className="mb-4">
-                        <label>Password</label>
-                        <input type="password" className="w-full p-2 border rounded" value={password} onChange={e => setPassword(e.target.value)} />
-                    </div>
-                    <button type="submit" className="btn btn-primary w-full">Login</button>
-                </form>
+                    <form onSubmit={handleLogin} style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-main)', fontWeight: 500 }}>Username</label>
+                            <input type="text" required style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={username} onChange={e => setUsername(e.target.value)} />
+                        </div>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-main)', fontWeight: 500 }}>Password</label>
+                            <input type="password" required style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={password} onChange={e => setPassword(e.target.value)} />
+                        </div>
+                        <button type="submit" style={{ width: '100%', padding: '0.875rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}>Sign In</button>
+                    </form>
+                </div>
             </div>
         );
     }
 
     const SidebarItem = ({ id, icon: Icon, label }) => (
-        <div
-            onClick={() => setActiveTab(id)}
-            className={`cursor-pointer rounded-lg p-3 flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 transition-colors ${activeTab === id
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-        >
+        <div onClick={() => setActiveTab(id)} style={{ cursor: 'pointer', borderRadius: '12px', padding: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', background: activeTab === id ? 'var(--primary-light)' : 'transparent', color: activeTab === id ? 'white' : 'var(--text-muted)', fontWeight: activeTab === id ? 600 : 400, transition: 'all 0.2s' }}>
             <Icon size={20} />
-            <span className="text-xs md:text-sm font-medium">{label}</span>
+            <span>{label}</span>
         </div>
     );
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 pb-20 md:pb-0">
-            {/* Sidebar (Desktop) / Bottom Nav (Mobile) */}
-            <div className="fixed md:relative bottom-0 left-0 right-0 z-50 bg-white border-t md:border-t-0 md:border-r border-gray-200 md:w-64 md:h-screen md:p-5 flex md:flex-col justify-around md:justify-start shadow-lg md:shadow-none">
-                <div className="hidden md:block mb-8">
-                    <h3 className="text-xl font-bold text-purple-700">Admin Panel</h3>
+        <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--background)' }}>
+            <div style={{ width: '280px', background: 'var(--surface)', padding: '2rem', borderRight: '1px solid var(--surface-muted)' }}>
+                <div style={{ marginBottom: '2.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                        <div style={{ background: 'var(--primary)', padding: '8px', borderRadius: '10px', color: 'white', display: 'flex' }}>💜</div>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Growing Up</h3>
+                    </div>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginLeft: '3rem' }}>Admin Dashboard</p>
                 </div>
-
                 <SidebarItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
                 <SidebarItem id="lessons" icon={BookOpen} label="Lessons" />
                 <SidebarItem id="modules" icon={Layers} label="Modules" />
-
-                <div className="hidden md:block mt-auto pt-5">
-                    <button
-                        onClick={() => { localStorage.removeItem('adminToken'); setIsLoggedIn(false); }}
-                        className="w-full border border-gray-300 rounded-lg p-2 text-gray-600 hover:bg-gray-100 flex items-center justify-center gap-2"
-                    >
-                        <LogOut size={16} /> Logout
+                <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
+                    <button onClick={() => { localStorage.removeItem('adminToken'); setIsLoggedIn(false); }} style={{ width: '100%', padding: '0.875rem', border: '2px solid var(--surface-muted)', borderRadius: '12px', background: 'transparent', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 500 }}>
+                        <LogOut size={18} /> Logout
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Header (Logout) */}
-            <div className="md:hidden flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-40">
-                <h3 className="font-bold text-purple-700">Admin Panel</h3>
-                <button
-                    onClick={() => { localStorage.removeItem('adminToken'); setIsLoggedIn(false); }}
-                    className="text-gray-500"
-                >
-                    <LogOut size={20} />
-                </button>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1 p-4 md:p-8 overflow-y-auto h-screen">
-
-                {/* DASHBOARD TAB */}
+            <div style={{ flex: 1, padding: '2.5rem', overflowY: 'auto' }}>
                 {activeTab === 'dashboard' && (
                     <div>
-                        <h2 className="mb-4">Dashboard Overview</h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                            <div className="card text-center">
-                                <h3 style={{ fontSize: '3rem', color: 'var(--primary)' }}>{stats?.modules || 0}</h3>
-                                <p>Active Modules</p>
+                        <h2 style={{ fontSize: '2rem', color: 'var(--primary-dark)', marginBottom: '2rem' }}>Dashboard Overview</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+                            <div style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-light))', padding: '2rem', borderRadius: '16px', color: 'white', textAlign: 'center' }}>
+                                <h3 style={{ fontSize: '3.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{stats?.modules || 0}</h3>
+                                <p style={{ fontSize: '1rem', opacity: 0.9 }}>Active Modules</p>
                             </div>
-                            <div className="card text-center">
-                                <h3 style={{ fontSize: '3rem', color: 'var(--secondary)' }}>{stats?.lessons || 0}</h3>
-                                <p>Total Lessons</p>
+                            <div style={{ background: 'linear-gradient(135deg, var(--secondary), var(--secondary-light))', padding: '2rem', borderRadius: '16px', color: 'white', textAlign: 'center' }}>
+                                <h3 style={{ fontSize: '3.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{stats?.lessons || 0}</h3>
+                                <p style={{ fontSize: '1rem', opacity: 0.9 }}>Total Lessons</p>
                             </div>
-                            <div className="card text-center">
-                                <h3 style={{ fontSize: '3rem', color: 'var(--success)' }}>{stats?.users || 0}</h3>
-                                <p>Users</p>
+                            <div style={{ background: 'linear-gradient(135deg, #10B981, #34D399)', padding: '2rem', borderRadius: '16px', color: 'white', textAlign: 'center' }}>
+                                <h3 style={{ fontSize: '3.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{stats?.users || 0}</h3>
+                                <p style={{ fontSize: '1rem', opacity: 0.9 }}>Users</p>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* LESSONS TAB */}
                 {activeTab === 'lessons' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                        <div>
-                            <h3 className="mb-4">Add New Lesson</h3>
-                            <form onSubmit={handleAddLesson} className="card">
-                                <div className="mb-2">
-                                    <label>Select Module</label>
-                                    <select className="w-full p-2 border rounded" value={selectedModuleId} onChange={e => setSelectedModuleId(e.target.value)}>
-                                        {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
-                                    </select>
+                    <div>
+                        <h2 style={{ fontSize: '2rem', color: 'var(--primary-dark)', marginBottom: '2rem' }}>Manage Lessons</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                            <div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Add New Lesson</h3>
+                                <form onSubmit={handleAddLesson} style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--surface-muted)' }}>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Select Module</label>
+                                        <select style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={selectedModuleId} onChange={e => setSelectedModuleId(e.target.value)}>
+                                            {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
+                                        </select>
+                                    </div>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Title</label>
+                                        <input type="text" required style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={newLesson.title} onChange={e => setNewLesson({ ...newLesson, title: e.target.value })} />
+                                    </div>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Video ID (YouTube)</label>
+                                        <input type="text" style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={newLesson.videoId} onChange={e => setNewLesson({ ...newLesson, videoId: e.target.value })} />
+                                    </div>
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Content</label>
+                                        <textarea rows="5" required style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem', fontFamily: 'inherit' }} value={newLesson.content} onChange={e => setNewLesson({ ...newLesson, content: e.target.value })}></textarea>
+                                    </div>
+                                    <button type="submit" style={{ width: '100%', padding: '0.875rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}><Plus size={18} /> Add Lesson</button>
+                                </form>
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>All Lessons</h3>
+                                <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--surface-muted)', maxHeight: '600px', overflowY: 'auto' }}>
+                                    {modules.map(module => (
+                                        <div key={module.id} style={{ marginBottom: '1.5rem' }}>
+                                            <h4 style={{ color: 'var(--primary)', fontWeight: 600, borderBottom: '2px solid var(--surface-muted)', paddingBottom: '0.5rem', marginBottom: '0.75rem' }}>{module.title}</h4>
+                                            {module.lessons?.map(lesson => (
+                                                <div key={lesson.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--background)', borderRadius: '8px', marginBottom: '0.5rem' }}>
+                                                    <span style={{ color: 'var(--text-main)' }}>{lesson.title}</span>
+                                                    <button onClick={() => handleDeleteLesson(module.id, lesson.id)} style={{ color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}>
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="mb-2">
-                                    <label>Title</label>
-                                    <input type="text" required className="w-full p-2 border rounded" value={newLesson.title} onChange={e => setNewLesson({ ...newLesson, title: e.target.value })} />
-                                </div>
-                                <div className="mb-2">
-                                    <label>Video ID (YouTube)</label>
-                                    <input type="text" className="w-full p-2 border rounded" value={newLesson.videoId} onChange={e => setNewLesson({ ...newLesson, videoId: e.target.value })} />
-                                </div>
-                                <div className="mb-2">
-                                    <label>Content</label>
-                                    <textarea rows="4" required className="w-full p-2 border rounded" value={newLesson.content} onChange={e => setNewLesson({ ...newLesson, content: e.target.value })}></textarea>
-                                </div>
-                                <button type="submit" className="btn btn-primary">Add Lesson</button>
-                            </form>
+                            </div>
                         </div>
+                    </div>
+                )}
 
-                        <div>
-                            <h3 className="mb-4">Manage Lessons</h3>
-                            <div className="card" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+                {activeTab === 'modules' && (
+                    <div>
+                        <h2 style={{ fontSize: '2rem', color: 'var(--primary-dark)', marginBottom: '2rem' }}>Manage Modules</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                            <div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Create New Module</h3>
+                                <form onSubmit={handleAddModule} style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--surface-muted)' }}>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Title</label>
+                                        <input type="text" required style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={newModule.title} onChange={e => setNewModule({ ...newModule, title: e.target.value })} />
+                                    </div>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Description</label>
+                                        <input type="text" required style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={newModule.description} onChange={e => setNewModule({ ...newModule, description: e.target.value })} />
+                                    </div>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Color</label>
+                                        <select style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={newModule.color} onChange={e => setNewModule({ ...newModule, color: e.target.value })}>
+                                            <option value="bg-purple-100">Purple</option>
+                                            <option value="bg-red-100">Red</option>
+                                            <option value="bg-blue-100">Blue</option>
+                                            <option value="bg-yellow-100">Yellow</option>
+                                            <option value="bg-green-100">Green</option>
+                                        </select>
+                                    </div>
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-main)' }}>Icon</label>
+                                        <select style={{ width: '100%', padding: '0.75rem', border: '2px solid var(--surface-muted)', borderRadius: '8px', fontSize: '1rem' }} value={newModule.icon} onChange={e => setNewModule({ ...newModule, icon: e.target.value })}>
+                                            <option value="Sparkles">Sparkles</option>
+                                            <option value="Droplet">Droplet</option>
+                                            <option value="Shield">Shield</option>
+                                            <option value="Smile">Smile</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" style={{ width: '100%', padding: '0.875rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}><Plus size={18} /> Create Module</button>
+                                </form>
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Existing Modules</h3>
                                 {modules.map(module => (
-                                    <div key={module.id} className="mb-4">
-                                        <h4 style={{ color: 'var(--text-muted)', borderBottom: '1px solid #eee', paddingBottom: '5px' }}>{module.title}</h4>
-                                        {module.lessons.map(lesson => (
-                                            <div key={lesson.id} className="flex-between p-2 border-bottom">
-                                                <span>{lesson.title}</span>
-                                                <button onClick={() => handleDeleteLesson(module.id, lesson.id)} style={{ color: 'var(--error)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        ))}
+                                    <div key={module.id} style={{ background: 'var(--surface)', padding: '1.25rem', borderRadius: '12px', marginBottom: '1rem', border: '1px solid var(--surface-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>{module.title}</strong>
+                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{module.lessons?.length || 0} lessons</p>
+                                        </div>
+                                        <button onClick={() => handleDeleteModule(module.id)} style={{ color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
+                                            <Trash2 size={20} />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* MODULES TAB */}
-                {activeTab === 'modules' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                        <div>
-                            <h3 className="mb-4">Create New Module</h3>
-                            <form onSubmit={handleAddModule} className="card">
-                                <div className="mb-2">
-                                    <label>Title</label>
-                                    <input type="text" required className="w-full p-2 border rounded" value={newModule.title} onChange={e => setNewModule({ ...newModule, title: e.target.value })} />
-                                </div>
-                                <div className="mb-2">
-                                    <label>Description</label>
-                                    <input type="text" required className="w-full p-2 border rounded" value={newModule.description} onChange={e => setNewModule({ ...newModule, description: e.target.value })} />
-                                </div>
-                                <div className="mb-2">
-                                    <label>Color Class</label>
-                                    <select className="w-full p-2 border rounded" value={newModule.color} onChange={e => setNewModule({ ...newModule, color: e.target.value })}>
-                                        <option value="bg-purple-100">Purple</option>
-                                        <option value="bg-red-100">Red</option>
-                                        <option value="bg-blue-100">Blue</option>
-                                        <option value="bg-yellow-100">Yellow</option>
-                                        <option value="bg-green-100">Green</option>
-                                    </select>
-                                </div>
-                                <div className="mb-2">
-                                    <label>Icon</label>
-                                    <select className="w-full p-2 border rounded" value={newModule.icon} onChange={e => setNewModule({ ...newModule, icon: e.target.value })}>
-                                        <option value="Sparkles">Sparkles</option>
-                                        <option value="Droplet">Droplet</option>
-                                        <option value="Shield">Shield</option>
-                                        <option value="Smile">Smile</option>
-                                    </select>
-                                </div>
-                                <button type="submit" className="btn btn-primary"><Plus size={16} /> Create Module</button>
-                            </form>
-                        </div>
-
-                        <div>
-                            <h3 className="mb-4">Existing Modules</h3>
-                            {modules.map(module => (
-                                <div key={module.id} className="card mb-2 flex-between">
-                                    <div>
-                                        <strong>{module.title}</strong>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{module.lessons.length} lessons</p>
-                                    </div>
-                                    <button onClick={() => handleDeleteModule(module.id)} className="btn" style={{ color: 'var(--error)', padding: '5px' }}>
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            ))}
                         </div>
                     </div>
                 )}
