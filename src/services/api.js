@@ -115,9 +115,36 @@ export const api = {
         return error ? { success: false } : { success: true };
     },
 
+    updateModule: async (moduleId, updates) => {
+        const { error } = await supabase
+            .from('modules')
+            .update(updates)
+            .eq('id', moduleId);
+        return error ? { success: false } : { success: true };
+    },
+
     deleteModule: async (moduleId) => {
         await supabase.from('modules').delete().eq('id', moduleId);
         return { success: true };
+    },
+
+    updateLesson: async (moduleId, lessonId, updates) => {
+        const { data: module } = await supabase
+            .from('modules')
+            .select('lessons')
+            .eq('id', moduleId)
+            .single();
+
+        const lessons = module?.lessons?.map(l => 
+            l.id === lessonId ? { ...l, ...updates } : l
+        ) || [];
+
+        const { error } = await supabase
+            .from('modules')
+            .update({ lessons })
+            .eq('id', moduleId);
+
+        return error ? { success: false } : { success: true };
     },
 
     getStats: async () => {
