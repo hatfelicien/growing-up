@@ -2,9 +2,10 @@
 import Datastore from 'nedb-promises';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { tmpdir } from 'os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dbPath = join(__dirname, 'data');
+const dbPath = process.env.VERCEL ? tmpdir() : join(__dirname, 'data');
 
 // Initialize databases
 const db = {

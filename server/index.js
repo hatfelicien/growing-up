@@ -143,10 +143,16 @@ app.get('/api/stats', async (req, res) => {
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
-app.use((req, res) => {
-    res.sendFile(join(__dirname, '../dist/index.html'));
-});
+if (!process.env.VERCEL) {
+    app.use((req, res) => {
+        res.sendFile(join(__dirname, '../dist/index.html'));
+    });
+}
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
+
+export default app;
