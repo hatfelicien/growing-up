@@ -1,8 +1,9 @@
+import { supabase } from './supabase.js';
+import { content } from '../data/content.js';
 
 const DB_NAME = 'GrowingUpDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'modules';
-import { content } from '../data/content.js';
 
 // Initialize IndexedDB
 const openDB = () => {
@@ -22,31 +23,22 @@ const openDB = () => {
 };
 
 export const api = {
-    // ... (existing code)
-
-    // Sync data from server to local storage
+    // Sync data from Supabase to local storage
     syncContent: async () => {
         let modulesData = [];
         try {
-            // 1. Try to fetch from server
-            const response = await fetch('/api/data');
-            if (!response.ok) throw new Error('Network response was not ok');
-
-            const data = await response.json();
-            modulesData = data.modules;
-
+            const { data, error } = await supabase.from('modules').select('*');
+            
+            if (error) throw error;
+            modulesData = data && data.length > 0 ? data : content.modules;
         } catch (error) {
-            console.log('Offline or Server Unreachable. Using static fallback data.', error);
-            // Fallback to static content
+            console.log('Offline or Supabase unreachable. Using static fallback.', error);
             modulesData = content.modules;
         }
 
-        // 2. Save to IndexedDB (Always save whatever we got - server or static)
         const db = await openDB();
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
-
-        // Clear old data? Or merge? For now, clear and replace to ensure consistency.
         await store.clear();
 
         for (const module of modulesData) {
@@ -56,7 +48,6 @@ export const api = {
         return modulesData;
     },
 
-    // Get modules (Offline-first strategy)
     getModules: async () => {
         const db = await openDB();
         return new Promise((resolve, reject) => {
@@ -69,67 +60,80 @@ export const api = {
         });
     },
 
-    // Admin Login
     login: async (username, password) => {
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await response.json();
-        if (data.success) {
-            localStorage.setItem('adminToken', data.token);
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+            .eq('password', password)
+            .single();
+
+        if (data) {
+            localStorage.setItem('adminToken', 'authenticated');
+            return { success: true, token: 'authenticated' };
         }
-        return data;
+        return { success: false };
     },
 
-    // Add Lesson (Online only for now)
     addLesson: async (moduleId, lesson) => {
-        const response = await fetch(`/api/modules/${moduleId}/lessons`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` // Add if we implement middleware
-            },
-            body: JSON.stringify(lesson)
-        });
-        return await response.json();
+        const { data: module } = await supabase
+            .from('modules')
+            .select('lessons')
+            .eq('id', moduleId)
+            .single();
+
+        const lessons = module?.lessons || [];
+        lessons.push(lesson);
+
+        const { error } = await supabase
+            .from('modules')
+            .update({ lessons })
+            .eq('id', moduleId);
+
+        return error ? { success: false } : { success: true, lesson };
     },
 
-    // Delete Lesson
     deleteLesson: async (moduleId, lessonId) => {
-        const response = await fetch(`/api/modules/${moduleId}/lessons/${lessonId}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        return await response.json();
+        const { data: module } = await supabase
+            .from('modules')
+            .select('lessons')
+            .eq('id', moduleId)
+            .single();
+
+        const lessons = module?.lessons.filter(l => l.id !== lessonId) || [];
+
+        await supabase
+            .from('modules')
+            .update({ lessons })
+            .eq('id', moduleId);
+
+        return { success: true };
     },
 
-    // Create Module
     createModule: async (moduleData) => {
-        const response = await fetch('/api/modules', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(moduleData)
-        });
-        return await response.json();
+        const { error } = await supabase.from('modules').insert([moduleData]);
+        return error ? { success: false } : { success: true };
     },
 
-    // Delete Module
     deleteModule: async (moduleId) => {
-        const response = await fetch(`/api/modules/${moduleId}`, {
-            method: 'DELETE'
-        });
-        return await response.json();
+        await supabase.from('modules').delete().eq('id', moduleId);
+        return { success: true };
     },
 
-    // Get Stats
     getStats: async () => {
         try {
-            const response = await fetch('/api/stats');
-            return await response.json();
+            const { data: modules } = await supabase.from('modules').select('*');
+            const { data: users } = await supabase.from('users').select('*');
+            
+            const lessonCount = modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0;
+            
+            return {
+                modules: modules?.length || 0,
+                lessons: lessonCount,
+                users: users?.length || 0
+            };
         } catch (e) {
-            return null; // Offline
+            return null;
         }
     }
 };

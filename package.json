@@ -14,6 +14,7 @@
     "share": "npx localtunnel --port 5173"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.96.0",
     "@tailwindcss/vite": "^4.1.18",
     "body-parser": "^2.2.2",
     "concurrently": "^9.2.1",
